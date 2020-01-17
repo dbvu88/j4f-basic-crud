@@ -25,7 +25,16 @@ class InMemmory {
       this.data.push({ id, ...user })
       return 1;
     }
-    return -1;
+    throw new Error('Bad Request')
+  }
+
+  remove(id) {
+    const sizeInit = this.data.length
+    this.data = this.data.filter(user => user.id != id)
+    if (this.data.length < sizeInit) {
+      return 1;
+    }
+    throw new Error('User Not Found')
   }
 }
 
@@ -39,16 +48,23 @@ router
     res.json(users.get(req.params.id));
   })
   .post('/', (req, res, next) => {
-    if (req.body.name) {
+    try {
       res.json(users.insert(req.body))
     }
-    next(new Error('Bad Request'))
+    catch (ex) {
+      next(ex)
+    }
   })
   .put('/:id', (req, res, next) => {
     res.send('Got a PUT request ' + req.params.id)
   })
   .delete('/:id', (req, res, next) => {
-    res.send('Got a DELETE request' + req.params.id)
+    try {
+      res.json(users.remove(req.params.id))
+    }
+    catch (ex) {
+      next(ex)
+    }
   });
 
 module.exports = router;
